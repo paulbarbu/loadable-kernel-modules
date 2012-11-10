@@ -1,5 +1,16 @@
 /**
  * http://www.ibm.com/developerworks/linux/library/l-proc/index.html
+ *
+ * Usage:
+ * # insmod fortune.ko
+ * $ echo My fortune text! > /proc/fortune
+ * $ echo My other fortune text! > /proc/fortune
+ * $ echo Yet another fortune text! > /proc/fortune
+ * $ cat /proc/fortune
+ * $ cat /proc/fortune
+ * $ cat /proc/fortune
+ * $ cat /proc/fortune
+ * # rmmod fortune
  */
 
 #include <linux/module.h>
@@ -20,18 +31,18 @@ void fortune_exit(void);
 module_init(fortune_init);
 module_exit(fortune_exit);
 
-const char *proc_filename = "fortune";
-
-char *cookie_buf;
-
-struct proc_dir_entry *proc_file;
-unsigned int read_index;
-unsigned int write_index;
-
 struct file_operations fops = {
     .read = fortune_read,
     .write = fortune_write,
 };
+
+const char *proc_filename = "fortune";
+
+char *cookie_buf;
+struct proc_dir_entry *proc_file;
+
+unsigned int read_index;
+unsigned int write_index;
 
 ssize_t fortune_read(struct file *file, char *buf, size_t count, loff_t *f_pos){
     int len;
@@ -105,7 +116,7 @@ int fortune_init(void){
 }
 
 void fortune_exit(void){
-    remove_proc_entry(proc_filename, NULL); //check the removal
+    remove_proc_entry(proc_filename, NULL);
 
     if(cookie_buf){
         vfree(cookie_buf);
