@@ -46,24 +46,22 @@ unsigned int write_index;
 
 ssize_t fortune_read(struct file *file, char *buf, size_t count, loff_t *f_pos){
     int len;
-    static int finished = 0;
 
-    printk(KERN_INFO "f_pos: %i", *f_pos);
-
-    if(finished){
-        finished = 0;
+    //there's no fortune or a fortune has already been read
+    //the *f_pos > 0 hack is needed because `cat /proc/fortune` would otherwise
+    //display every thing in the cookie_buf
+    if(write_index == 0 || *f_pos > 0){
         return 0;
     }
 
+    // cicle through fortunes
     if(read_index >= write_index){
         read_index = 0;
     }
 
-    finished = 1;
-
     len = sprintf(buf, "%s\n", &cookie_buf[read_index]);
 
-    read_index += len; // if I cat the empty /proc/fortune then this will be incremented to 1 and the next output will be stripped off the first letter
+    read_index += len;
     *f_pos += len;
 
     return len;
