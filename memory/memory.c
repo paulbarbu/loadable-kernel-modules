@@ -20,6 +20,7 @@
 #include <linux/slab.h>
 #include <linux/fs.h>
 #include <asm/uaccess.h>
+#include <linux/miscdevice.h>
 
 MODULE_LICENSE("GPL");
 
@@ -39,6 +40,12 @@ struct file_operations memory_fops = {
     write: memory_write, //.write = memory_write,
     open: memory_open, //.open = memory_open,
     release: memory_release, //.release = memory_release,
+};
+
+struct miscdevice memory_dev = {
+    .minor = MISC_DYNAMIC_MINOR,
+    .name = "memory",
+    .fops = &memory_fops,
 };
 
 const int memory_major = 60;
@@ -75,10 +82,17 @@ ssize_t memory_write(struct file *file, const char *buf, size_t count, loff_t *f
 int memory_init(void){
     int result;
 
-    result = register_chrdev(memory_major, module_name, &memory_fops);
+    /*result = register_chrdev(memory_major, module_name, &memory_fops);*/
+
+    /*if(result < 0){*/
+        /*printk(KERN_INFO "Memory module cannot obtain major number %d.\n", memory_major);*/
+        /*return result;*/
+    /*}*/
+
+    result = misc_register(&memory_dev);
 
     if(result < 0){
-        printk(KERN_INFO "Memory module cannot obtain major number %d.\n", memory_major);
+        printk(KERN_INFO "Memory module cannot register device.\n");
         return result;
     }
 
@@ -99,7 +113,8 @@ int memory_init(void){
 }
 
 void memory_exit(void){
-    unregister_chrdev(memory_major, module_name);
+    /*unregister_chrdev(memory_major, module_name);*/
+    misc_deregister(&memory_dev);
 
     if(memory_buffer){
         kfree(memory_buffer);
