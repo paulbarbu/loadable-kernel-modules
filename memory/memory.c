@@ -11,6 +11,9 @@
  * $ echo -n asd > /dev/memory
  * $ cat /dev/memory
  * # rmmod memory
+ *
+ * TODO:
+ * http://stackoverflow.com/questions/5970595/create-a-device-node-in-code
  */
 
 #include <linux/module.h>
